@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.diproject</groupId>
 	<artifactId>diproject</artifactId>
-	<version>2.0.0</version>
+	<version>4.0.0</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -75,6 +75,7 @@
 		<plugins>
 			<plugin>
 				<groupId>com.google.code.maven-license-plugin</groupId>
+				<version>1.4.0</version>
 				<artifactId>maven-license-plugin</artifactId>
 				<configuration>
 					<header>header/license-header.txt</header>
