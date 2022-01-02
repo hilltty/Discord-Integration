@@ -40,3 +40,5 @@ local.properties
 .classpath
 .gitattributes
 .project
+target/
+dependency-reduced-pom.xml

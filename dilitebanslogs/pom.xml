@@ -1,3 +1,12 @@
+<!--
+
+    Copyright (C) 2021 Discord Integration Project
+    https://github.com/Alhxe/Discord-Integration
+    
+    This project is under license https://github.com/Alhxe/Discord-Integration/blob/main/LICENSE
+
+-->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -15,6 +24,9 @@
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<organizationName>Discord Integration Project</organizationName>
+		<inceptionYear>2020</inceptionYear>
 	</properties>
 
 	<repositories>

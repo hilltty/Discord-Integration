@@ -10,6 +10,7 @@
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<modules>
@@ -55,4 +56,30 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>mc-release</id>
+			<name>Local Maven repository of releases</name>
+			<url>http://mc-repo.googlecode.com/svn/maven2/releases</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>com.google.code.maven-license-plugin</groupId>
+				<artifactId>maven-license-plugin</artifactId>
+				<configuration>
+					<header>header/license-header.txt</header>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
