@@ -42,3 +42,4 @@ local.properties
 .project
 target/
 dependency-reduced-pom.xml
+.idea/
