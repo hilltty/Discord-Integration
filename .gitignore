@@ -43,3 +43,4 @@ local.properties
 target/
 dependency-reduced-pom.xml
 .idea/
+*.iml
