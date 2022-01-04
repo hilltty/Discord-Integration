@@ -153,7 +153,7 @@ public class HibernateController {
 	 * @param p data base properties.
 	 */
 	private static void addCommonProperties(Properties p) {
-		p.put(Environment.SHOW_SQL, true);
+		p.put(Environment.SHOW_SQL, false);
 		p.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
 		p.put(Environment.HBM2DDL_AUTO, "update");
 		p.put(Environment.POOL_SIZE, 1);
