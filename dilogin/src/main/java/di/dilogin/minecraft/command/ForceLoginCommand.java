@@ -19,10 +19,9 @@ import org.bukkit.plugin.Plugin;
 import di.dilogin.BukkitApplication;
 import di.dilogin.controller.DILoginController;
 import di.dilogin.controller.LangManager;
-import di.dilogin.dao.DIUserDao;
-import di.dilogin.dao.DIUserDaoSqlImpl;
 import di.dilogin.entity.TmpMessage;
 import di.dilogin.minecraft.cache.TmpCache;
+import di.dilogin.repository.DIUserRepository;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
@@ -33,10 +32,10 @@ import net.dv8tion.jda.api.entities.User;
 public class ForceLoginCommand implements CommandExecutor {
 
 	/**
-	 * User manager in the database.
+	 * DIUser repository.
 	 */
-	private final DIUserDao userDao = new DIUserDaoSqlImpl();
-
+	private static DIUserRepository diUserRepository = DIUserRepository.getInstance();
+	
 	/**
 	 * Main plugin.
 	 */
@@ -51,7 +50,7 @@ public class ForceLoginCommand implements CommandExecutor {
 			sender.sendMessage(LangManager.getString("no_player").replace("%nick%", nick));
 			return false;
 		}
-		if (!userDao.contains(player.getName())) {
+		if (!diUserRepository.findByMinecraftName(player.getName()).isPresent()) {
 			sender.sendMessage(LangManager.getString(player, "user_not_registered"));
 			return false;
 		}

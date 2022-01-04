@@ -18,9 +18,8 @@ import org.bukkit.plugin.Plugin;
 import di.dicore.DIApi;
 import di.dilogin.BukkitApplication;
 import di.dilogin.controller.LangManager;
-import di.dilogin.dao.DIUserDao;
-import di.dilogin.dao.DIUserDaoSqlImpl;
-import di.dilogin.entity.DIUser;
+import di.dilogin.entity.DIUserEntity;
+import di.dilogin.repository.DIUserRepository;
 
 /**
  * Command to unregister the account.
@@ -28,9 +27,9 @@ import di.dilogin.entity.DIUser;
 public class UnregisterCommand implements CommandExecutor {
 
 	/**
-	 * User manager in the database.
+	 * DIUser repository.
 	 */
-	private final DIUserDao userDao = new DIUserDaoSqlImpl();
+	private static DIUserRepository diUserRepository = DIUserRepository.getInstance();
 
 	/**
 	 * Main plugin.
@@ -51,20 +50,21 @@ public class UnregisterCommand implements CommandExecutor {
 		}
 
 		String nick = args[0];
-		Optional<DIUser> optUser = userDao.get(nick);
+		Optional<DIUserEntity> optUser = diUserRepository.findByMinecraftName(nick);
 
 		if (!optUser.isPresent()) {
 			sender.sendMessage(LangManager.getString("no_player").replace("%nick%", nick));
 			return true;
 		}
-		DIUser user = optUser.get();
+		DIUserEntity user = optUser.get();
 		Player player = sender.getServer().getPlayer(nick);
 		sender.sendMessage(LangManager.getString(nick, "unregister_success"));
 		
 		if(player!=null)
 		player.kickPlayer(LangManager.getString(player, "unregister_kick"));
 		
-		userDao.remove(user);
+		diUserRepository.delete(user);
+		
 		return true;
 	}
 

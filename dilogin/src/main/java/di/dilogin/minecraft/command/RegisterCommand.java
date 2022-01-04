@@ -19,10 +19,9 @@ import org.bukkit.entity.Player;
 import di.dicore.DIApi;
 import di.dilogin.BukkitApplication;
 import di.dilogin.controller.LangManager;
-import di.dilogin.dao.DIUserDao;
-import di.dilogin.dao.DIUserDaoSqlImpl;
 import di.dilogin.entity.TmpMessage;
 import di.dilogin.minecraft.cache.TmpCache;
+import di.dilogin.repository.DIUserRepository;
 import di.internal.utils.Utils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -37,9 +36,9 @@ import net.dv8tion.jda.api.entities.User;
 public class RegisterCommand implements CommandExecutor {
 
 	/**
-	 * User manager in the database.
+	 * DIUser repository.
 	 */
-	private final DIUserDao userDao = new DIUserDaoSqlImpl();
+	private static DIUserRepository diUserRepository = DIUserRepository.getInstance();
 
 	/**
 	 * Main api.
@@ -56,7 +55,7 @@ public class RegisterCommand implements CommandExecutor {
 		if (sender instanceof Player) {
 			Player player = (Player) sender;
 
-			if (userDao.contains(player.getName())) {
+			if (diUserRepository.findByMinecraftName(player.getName()).isPresent()) {
 				player.sendMessage(LangManager.getString(player, "register_already_exists"));
 				return false;
 			}
@@ -83,7 +82,7 @@ public class RegisterCommand implements CommandExecutor {
 
 			User user = userOpt.get();
 
-			if (userDao.getDiscordUserAccounts(user) >= api.getInternalController().getConfigManager()
+			if (diUserRepository.findByDiscordId(user.getIdLong()).size() >= api.getInternalController().getConfigManager()
 					.getInt("register_max_discord_accounts")) {
 				player.sendMessage(LangManager.getString(player, "register_max_accounts").replace("%user_discord_id%",
 						id.replace(" ", "")));

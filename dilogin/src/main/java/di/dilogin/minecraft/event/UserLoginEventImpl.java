@@ -17,18 +17,24 @@ import di.dilogin.BukkitApplication;
 import di.dilogin.controller.DILoginController;
 import di.dilogin.controller.LangManager;
 import di.dilogin.entity.CodeGenerator;
-import di.dilogin.entity.DIUser;
+import di.dilogin.entity.DIUserEntity;
 import di.dilogin.entity.TmpMessage;
 import di.dilogin.minecraft.cache.TmpCache;
 import di.dilogin.minecraft.cache.UserBlockedCache;
 import di.dilogin.minecraft.cache.UserSessionCache;
 import di.dilogin.minecraft.util.Util;
+import di.dilogin.repository.DIUserRepository;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 
 public class UserLoginEventImpl implements UserLoginEvent {
+	
+	/**
+	 * DIUser repository.
+	 */
+	private static DIUserRepository diUserRepository = DIUserRepository.getInstance();
 
 	@Override
 	@EventHandler
@@ -44,7 +50,7 @@ public class UserLoginEventImpl implements UserLoginEvent {
 		UserBlockedCache.add(event.getPlayer().getName());
 
 		// If the user is registered
-		if (userDao.contains(playerName)) {
+		if (diUserRepository.findByMinecraftName(playerName).isPresent()) {
 			initPlayerLoginRequest(event, playerName);
 		} else {
 			initPlayerRegisterRequest(event, playerName);
@@ -54,11 +60,11 @@ public class UserLoginEventImpl implements UserLoginEvent {
 	@Override
 	public void initPlayerLoginRequest(PlayerJoinEvent event, String playerName) {
 		TmpCache.addLogin(playerName, null);
-		Optional<DIUser> userOpt = userDao.get(playerName);
+		Optional<DIUserEntity> userOpt = diUserRepository.findByMinecraftName(playerName);
 		if (!userOpt.isPresent())
 			return;
 
-		DIUser user = userOpt.get();
+		DIUserEntity user = userOpt.get();
 		long seconds = BukkitApplication.getDIApi().getInternalController().getConfigManager()
 				.getLong("login_time_until_kick") * 1000;
 

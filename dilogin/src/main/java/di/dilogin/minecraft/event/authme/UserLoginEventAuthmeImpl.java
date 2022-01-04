@@ -15,20 +15,26 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import di.dilogin.controller.LangManager;
 import di.dilogin.entity.CodeGenerator;
-import di.dilogin.entity.DIUser;
+import di.dilogin.entity.DIUserEntity;
 import di.dilogin.entity.TmpMessage;
 import di.dilogin.minecraft.cache.TmpCache;
 import di.dilogin.minecraft.event.UserLoginEvent;
 import di.dilogin.minecraft.event.custom.DILoginEvent;
+import di.dilogin.repository.DIUserRepository;
 import fr.xephi.authme.events.LoginEvent;
 
 public class UserLoginEventAuthmeImpl implements UserLoginEvent {
 
+	/**
+	 * DIUser repository.
+	 */
+	private static DIUserRepository diUserRepository = DIUserRepository.getInstance();
+	
 	@Override
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		String playerName = event.getPlayer().getName();
-		if (!userDao.contains(playerName)) {
+		if (!diUserRepository.findByMinecraftName(playerName).isPresent()) {
 			initPlayerRegisterRequest(event, playerName);
 		} else {
 			initPlayerLoginRequest(event, playerName);
@@ -38,11 +44,11 @@ public class UserLoginEventAuthmeImpl implements UserLoginEvent {
 	@Override
 	public void initPlayerLoginRequest(PlayerJoinEvent event, String playerName) {
 		TmpCache.addLogin(playerName, null);
-		Optional<DIUser> userOpt = userDao.get(playerName);
+		Optional<DIUserEntity> userOpt = diUserRepository.findByMinecraftName(playerName);
 		if (!userOpt.isPresent())
 			return;
 
-		DIUser user = userOpt.get();
+		DIUserEntity user = userOpt.get();
 
 		event.getPlayer().sendMessage(LangManager.getString(user, "login_request"));
 		sendLoginMessageRequest(user.getPlayerBukkit().get(), user.getPlayerDiscord());
@@ -64,7 +70,7 @@ public class UserLoginEventAuthmeImpl implements UserLoginEvent {
 	public void onAuth(final LoginEvent event) {
 		String playerName = event.getPlayer().getName();
 
-		if (!userDao.contains(playerName)) {
+		if (!diUserRepository.findByMinecraftName(playerName).isPresent()) {
 			initPlayerAuthmeRegisterRequest(event, playerName);
 		}
 

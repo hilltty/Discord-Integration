@@ -15,15 +15,16 @@ import org.bukkit.entity.Player;
 
 import di.dicore.DIApi;
 import di.dilogin.BukkitApplication;
-import di.dilogin.dao.DIUserDao;
-import di.dilogin.dao.DIUserDaoSqlImpl;
 import di.dilogin.entity.AuthmeHook;
-import di.dilogin.entity.DIUser;
+import di.dilogin.entity.DIUserEntity;
 import di.dilogin.minecraft.cache.TmpCache;
 import di.dilogin.minecraft.cache.UserBlockedCache;
 import di.dilogin.minecraft.event.custom.DILoginEvent;
 import di.dilogin.minecraft.util.Util;
+import di.dilogin.repository.DIUserRepository;
 import di.internal.utils.Utils;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
@@ -33,14 +34,13 @@ import net.dv8tion.jda.api.entities.User;
 /**
  * Login plugin control.
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DILoginController {
-
+	
 	/**
-	 * Prohibits instantiation of the class.
+	 * DIUser repository.
 	 */
-	private DILoginController() {
-		throw new IllegalStateException();
-	}
+	private static DIUserRepository diUserRepository = DIUserRepository.getInstance();
 
 	/**
 	 * @return The basis for embed messages.
@@ -114,8 +114,7 @@ public class DILoginController {
 	 */
 	private static void syncroUserName(Player player, User user) {
 		if (Util.isSyncronizeOptionEnabled()) {
-			DIUserDao userDao = new DIUserDaoSqlImpl();
-			Optional<DIUser> optDIUser = userDao.get(player.getName());
+			Optional<DIUserEntity> optDIUser = diUserRepository.findByMinecraftName(player.getName());
 
 			if (!optDIUser.isPresent())
 				return;

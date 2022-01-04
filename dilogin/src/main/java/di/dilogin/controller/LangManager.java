@@ -10,7 +10,7 @@ package di.dilogin.controller;
 import org.bukkit.entity.Player;
 
 import di.dilogin.BukkitApplication;
-import di.dilogin.entity.DIUser;
+import di.dilogin.entity.DIUserEntity;
 import net.dv8tion.jda.api.entities.User;
 
 /**
@@ -60,7 +60,7 @@ public class LangManager {
 	 * @param path   Variable searched.
 	 * @return Message by changing the placeholders.
 	 */
-	public static String getString(DIUser user, String path) {
+	public static String getString(DIUserEntity user, String path) {
 		return getString(user.getPlayerBukkit().get(), path).replace("%discriminated_discord_name%",
 				String.valueOf(user.getPlayerDiscord().getName()) + "#" + user.getPlayerDiscord().getDiscriminator());
 	}

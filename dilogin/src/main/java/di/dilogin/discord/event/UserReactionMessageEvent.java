@@ -16,14 +16,13 @@ import di.dicore.DIApi;
 import di.dilogin.BukkitApplication;
 import di.dilogin.controller.DILoginController;
 import di.dilogin.controller.LangManager;
-import di.dilogin.dao.DIUserDao;
-import di.dilogin.dao.DIUserDaoSqlImpl;
 import di.dilogin.entity.AuthmeHook;
 import di.dilogin.entity.CodeGenerator;
-import di.dilogin.entity.DIUser;
+import di.dilogin.entity.DIUserEntity;
 import di.dilogin.entity.TmpMessage;
 import di.dilogin.minecraft.cache.TmpCache;
 import di.dilogin.minecraft.util.Util;
+import di.dilogin.repository.DIUserRepository;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
@@ -36,10 +35,13 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 public class UserReactionMessageEvent extends ListenerAdapter {
 
 	/**
-	 * Database user DAO.
+	 * DIUser repository.
 	 */
-	private final DIUserDao userDao = new DIUserDaoSqlImpl();
+	private static DIUserRepository diUserRepository = DIUserRepository.getInstance();
 	
+	/**
+	 * DIApi api.
+	 */
 	private final DIApi api = BukkitApplication.getDIApi();
 
 	@Override
@@ -82,7 +84,7 @@ public class UserReactionMessageEvent extends ListenerAdapter {
 		TmpCache.removeRegister(player.getName());
 		message.editMessage(getRegisterEmbed(user, player)).delay(Duration.ofSeconds(60)).flatMap(Message::delete)
 				.queue();
-		userDao.add(new DIUser(Optional.of(player), user));
+		diUserRepository.save(new DIUserEntity(player, user));
 
 		if (DILoginController.isAuthmeEnabled()) {
 			AuthmeHook.register(player, password);

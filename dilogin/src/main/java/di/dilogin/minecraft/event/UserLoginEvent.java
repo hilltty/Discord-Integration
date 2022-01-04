@@ -18,8 +18,6 @@ import di.dicore.DIApi;
 import di.dilogin.BukkitApplication;
 import di.dilogin.controller.DILoginController;
 import di.dilogin.controller.LangManager;
-import di.dilogin.dao.DIUserDao;
-import di.dilogin.dao.DIUserDaoSqlImpl;
 import di.dilogin.entity.TmpMessage;
 import di.dilogin.minecraft.cache.TmpCache;
 import net.dv8tion.jda.api.entities.Message;
@@ -32,10 +30,6 @@ import net.dv8tion.jda.api.entities.User;
  */
 public interface UserLoginEvent extends Listener {
 
-	/**
-	 * User manager.
-	 */
-	static final DIUserDao userDao = new DIUserDaoSqlImpl();
 
 	/**
 	 * Main api.

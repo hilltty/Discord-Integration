@@ -12,8 +12,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import di.dicore.DIApi;
-import di.dilogin.controller.DBController;
 import di.dilogin.controller.DILoginController;
+import di.dilogin.controller.HibernateController;
 import di.dilogin.discord.command.DiscordRegisterCommand;
 import di.dilogin.discord.event.UserReactionMessageEvent;
 import di.dilogin.minecraft.cache.TmpCache;
@@ -28,6 +28,7 @@ import di.dilogin.minecraft.event.UserTeleportEvents;
 import di.dilogin.minecraft.event.authme.AuthmeEvents;
 import di.dilogin.minecraft.event.authme.UserLoginEventAuthmeImpl;
 import di.internal.exception.NoApiException;
+import lombok.SneakyThrows;
 
 /**
  * Main Discord Integration Login class.
@@ -44,17 +45,17 @@ public class BukkitApplication extends JavaPlugin {
 	 */
 	private static Plugin plugin;
 
+	@SneakyThrows
 	@Override
 	public void onEnable() {
-		getLogger().info("Plugin started");
 		plugin = getPlugin(getClass());
-
 		connectWithCoreApi();
+		initHibernate();
 		initCommands();
 		initEvents();
 		initDiscordEvents();
 		initDiscordCommands();
-		DBController.getConnect();
+		getLogger().info("Plugin started");
 	}
 
 	@Override
@@ -138,6 +139,13 @@ public class BukkitApplication extends JavaPlugin {
 	 */
 	private void initDiscordCommands() {
 		api.registerDiscordCommand(new DiscordRegisterCommand());
+	}
+	
+	/**
+	 * Init hibernate configuration.
+	 */
+	private void initHibernate() {
+		HibernateController.initHibernate();
 	}
 
 }

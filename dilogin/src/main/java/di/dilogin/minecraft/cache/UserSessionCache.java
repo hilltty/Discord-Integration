@@ -12,9 +12,8 @@ import java.util.HashMap;
 import java.util.Optional;
 
 import di.dilogin.BukkitApplication;
-import di.dilogin.dao.DIUserDao;
-import di.dilogin.dao.DIUserDaoSqlImpl;
 import di.dilogin.entity.UserSession;
+import di.dilogin.repository.DIUserRepository;
 
 /**
  * Contains the list of users with valid and active sessions.
@@ -34,9 +33,9 @@ public class UserSessionCache {
 	private static final HashMap<UserSession, Long> sessions = new HashMap<>();
 
 	/**
-	 * User manager in the database.
+	 * DIUser repository.
 	 */
-	private static final DIUserDao userDao = new DIUserDaoSqlImpl();
+	private static DIUserRepository diUserRepository = DIUserRepository.getInstance();
 
 	/**
 	 * Check if the user has a valid session.
@@ -59,7 +58,7 @@ public class UserSessionCache {
 		if (Calendar.getInstance().getTimeInMillis() > ((Long) sessions.get(user)).longValue())
 			return false;
 		
-		if (!userDao.contains(name)) {
+		if (!diUserRepository.findByMinecraftName(name).isPresent()) {
 			sessions.remove(user);
 			return false;
 		}

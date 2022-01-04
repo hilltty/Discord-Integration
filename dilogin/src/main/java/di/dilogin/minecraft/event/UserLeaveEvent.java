@@ -14,12 +14,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import di.dilogin.controller.DILoginController;
-import di.dilogin.dao.DIUserDao;
-import di.dilogin.dao.DIUserDaoSqlImpl;
+import di.dilogin.entity.DIUserEntity;
 import di.dilogin.entity.TmpMessage;
 import di.dilogin.minecraft.cache.TmpCache;
 import di.dilogin.minecraft.cache.UserBlockedCache;
 import di.dilogin.minecraft.cache.UserSessionCache;
+import di.dilogin.repository.DIUserRepository;
 import net.dv8tion.jda.api.entities.Message;
 
 /**
@@ -28,16 +28,19 @@ import net.dv8tion.jda.api.entities.Message;
 public class UserLeaveEvent implements Listener {
 
 	/**
-	 * User manager in the database.
+	 * DIUser repository.
 	 */
-	private final DIUserDao userDao = new DIUserDaoSqlImpl();
+	private static DIUserRepository diUserRepository = DIUserRepository.getInstance();
 
 	@EventHandler
 	public void onPlayerLeave(PlayerQuitEvent event) {
+		
+		Optional<DIUserEntity> optUser = diUserRepository.findByMinecraftName(event.getPlayer().getName());
+		
 		boolean session = DILoginController.isSessionEnabled();
 		boolean isInRegister = TmpCache.containsRegister(event.getPlayer().getName());
 		boolean isInLogin = TmpCache.containsLogin(event.getPlayer().getName());
-		boolean isUserRegistered = userDao.contains(event.getPlayer().getName());
+		boolean isUserRegistered = optUser.isPresent();
 
 		// Check if add session
 		if (session && !isInRegister && !isInLogin && isUserRegistered) {

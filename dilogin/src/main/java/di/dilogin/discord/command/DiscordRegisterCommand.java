@@ -16,13 +16,12 @@ import di.dicore.DIApi;
 import di.dilogin.BukkitApplication;
 import di.dilogin.controller.DILoginController;
 import di.dilogin.controller.LangManager;
-import di.dilogin.dao.DIUserDao;
-import di.dilogin.dao.DIUserDaoSqlImpl;
 import di.dilogin.entity.AuthmeHook;
 import di.dilogin.entity.CodeGenerator;
-import di.dilogin.entity.DIUser;
+import di.dilogin.entity.DIUserEntity;
 import di.dilogin.entity.TmpMessage;
 import di.dilogin.minecraft.cache.TmpCache;
+import di.dilogin.repository.DIUserRepository;
 import di.internal.entity.DiscordCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -36,9 +35,9 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 public class DiscordRegisterCommand implements DiscordCommand {
 
 	/**
-	 * User manager in the database.
+	 * DIUser repository.
 	 */
-	private final DIUserDao userDao = new DIUserDaoSqlImpl();
+	private static DIUserRepository diUserRepository = DIUserRepository.getInstance();
 
 	/**
 	 * Main api.
@@ -49,14 +48,9 @@ public class DiscordRegisterCommand implements DiscordCommand {
 	public void execute(String message, MessageReceivedEvent event) {
 
 		event.getMessage().delete().delay(Duration.ofSeconds(20)).queue();
-		if (userDao.containsDiscordId(event.getAuthor().getIdLong())) {
-			event.getChannel().sendMessage(LangManager.getString("register_already_exists"))
-					.delay(Duration.ofSeconds(20)).flatMap(Message::delete).queue();
-			return;
-		}
 
 		// Check account limits.
-		if (userDao.getDiscordUserAccounts(event.getAuthor()) >= api.getInternalController().getConfigManager()
+		if (diUserRepository.findByDiscordId(event.getAuthor().getIdLong()).size() >= api.getInternalController().getConfigManager()
 				.getInt("register_max_discord_accounts")) {
 			event.getChannel().sendMessage(LangManager.getString("register_max_accounts")).delay(Duration.ofSeconds(20))
 					.flatMap(Message::delete).queue();
@@ -77,19 +71,31 @@ public class DiscordRegisterCommand implements DiscordCommand {
 					.delay(Duration.ofSeconds(10)).flatMap(Message::delete).queue();
 			return;
 		}
-
+		
 		Player player = tmpMessageOpt.get().getPlayer();
+		
+		// Check if player exists.
+		if (diUserRepository.findByMinecraftName(player.getName()).isPresent()) {
+			event.getChannel().sendMessage(LangManager.getString("register_already_exists"))
+					.delay(Duration.ofSeconds(20)).flatMap(Message::delete).queue();
+			return;
+		}
+		
 		// Create password.
 		String password = CodeGenerator.getCode(8, api);
 		player.sendMessage(LangManager.getString(event.getAuthor(), player, "register_success")
 				.replace("%authme_password%", password));
+		
 		// Send message to discord.
 		MessageEmbed messageEmbed = getEmbedMessage(player, event.getAuthor());
 		event.getChannel().sendMessage(messageEmbed).delay(Duration.ofSeconds(10)).flatMap(Message::delete).queue();
+		
 		// Remove user from register cache.
 		TmpCache.removeRegister(player.getName());
+		
 		// Add user to data base.
-		userDao.add(new DIUser(Optional.of(player), event.getAuthor()));
+		DIUserEntity user = new DIUserEntity(player, event.getAuthor());
+		diUserRepository.save(user);
 
 		if (DILoginController.isAuthmeEnabled()) {
 			AuthmeHook.register(player, password);
@@ -101,7 +107,6 @@ public class DiscordRegisterCommand implements DiscordCommand {
 
 	@Override
 	public String getAlias() {
-		
 		return api.getInternalController().getConfigManager().getString("register_command");
 	}
 

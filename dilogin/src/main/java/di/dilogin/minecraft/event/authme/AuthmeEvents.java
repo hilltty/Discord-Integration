@@ -13,8 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-import di.dilogin.dao.DIUserDao;
-import di.dilogin.dao.DIUserDaoSqlImpl;
+import di.dilogin.repository.DIUserRepository;
 import fr.xephi.authme.events.UnregisterByAdminEvent;
 import fr.xephi.authme.events.UnregisterByPlayerEvent;
 
@@ -24,9 +23,9 @@ import fr.xephi.authme.events.UnregisterByPlayerEvent;
 public class AuthmeEvents implements Listener {
 
 	/**
-	 * User management.
+	 * DIUser repository.
 	 */
-	private DIUserDao userDao = new DIUserDaoSqlImpl();
+	private static DIUserRepository diUserRepository = DIUserRepository.getInstance();
 
 	@EventHandler
 	void onUnregisterByAdminEvent(UnregisterByAdminEvent event) {
@@ -44,6 +43,6 @@ public class AuthmeEvents implements Listener {
 	 * Unregister user from DILogin.
 	 */
 	private void unregister(String playerName) {
-		userDao.remove(playerName);
+		diUserRepository.deleteByUserName(playerName);
 	}
 }
