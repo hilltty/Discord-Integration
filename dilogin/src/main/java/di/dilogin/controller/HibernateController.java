@@ -110,9 +110,9 @@ public class HibernateController {
 	}
 
 	/**
-	 * Create properties to SQLite database.
+	 * Create properties to H2 database.
 	 * 
-	 * @return SQLite properties.
+	 * @return H2 properties.
 	 */
 	private static Properties catchDataBaseInfoH2() {
 		Properties p = new Properties();
