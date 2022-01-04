@@ -120,10 +120,11 @@ public class HibernateController {
 		
 		if (dataFolder==null)
 			throw new IllegalStateException("No valid folder in SQLite");
+
 		p.put(Environment.DRIVER, "org.h2.Driver");
 		p.put(Environment.DIALECT, "org.hibernate.dialect.H2Dialect");
-		p.put(Environment.URL, "jdbc:h2:file:"+ dataFolder);
-		
+		p.put(Environment.URL, "jdbc:h2:file:"+ dataFolder+";mv_store=false");
+
 		addCommonProperties(p);
 
 		return p;
@@ -136,7 +137,7 @@ public class HibernateController {
 	private static File getSQLiteFolder() {
 		try {
 			File dataFolder = new File(
-					BukkitApplication.getDIApi().getInternalController().getDataFolder().getAbsolutePath(), "users.db");
+					BukkitApplication.getDIApi().getInternalController().getDataFolder().getAbsolutePath(), "users");
 			if (!dataFolder.exists())
 				dataFolder.createNewFile();
 
@@ -152,10 +153,11 @@ public class HibernateController {
 	 * @param p data base properties.
 	 */
 	private static void addCommonProperties(Properties p) {
-		p.put(Environment.SHOW_SQL, false);
+		p.put(Environment.SHOW_SQL, true);
 		p.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
-		p.put(Environment.HBM2DDL_AUTO, "create-drop");
+		p.put(Environment.HBM2DDL_AUTO, "update");
 		p.put(Environment.POOL_SIZE, 1);
+		p.put(Environment.AUTOCOMMIT, false);
 	}
 
 }
