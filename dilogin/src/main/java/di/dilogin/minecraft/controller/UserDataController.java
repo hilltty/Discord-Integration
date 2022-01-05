@@ -19,7 +19,7 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 
 import di.dilogin.BukkitApplication;
-import di.dilogin.entity.UserData;
+import di.dilogin.model.UserData;
 
 /**
  * Pre-login user data controller.

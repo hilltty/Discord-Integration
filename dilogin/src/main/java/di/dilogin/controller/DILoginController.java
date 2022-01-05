@@ -15,7 +15,7 @@ import org.bukkit.entity.Player;
 
 import di.dicore.DIApi;
 import di.dilogin.BukkitApplication;
-import di.dilogin.entity.AuthmeHook;
+import di.dilogin.model.AuthmeHook;
 import di.dilogin.entity.DIUserEntity;
 import di.dilogin.minecraft.cache.TmpCache;
 import di.dilogin.minecraft.cache.UserBlockedCache;

@@ -19,7 +19,7 @@ import org.bukkit.entity.Player;
 import di.dicore.DIApi;
 import di.dilogin.BukkitApplication;
 import di.dilogin.controller.LangManager;
-import di.dilogin.entity.TmpMessage;
+import di.dilogin.model.TmpMessage;
 import di.dilogin.minecraft.cache.TmpCache;
 import di.dilogin.repository.DIUserRepository;
 import di.internal.utils.Utils;

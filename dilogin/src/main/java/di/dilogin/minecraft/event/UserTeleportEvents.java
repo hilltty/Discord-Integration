@@ -17,7 +17,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import di.dicore.DIApi;
 import di.dilogin.BukkitApplication;
-import di.dilogin.entity.UserData;
+import di.dilogin.model.UserData;
 import di.dilogin.minecraft.controller.UserDataController;
 import di.dilogin.minecraft.event.custom.DILoginEvent;
 import di.internal.controller.file.ConfigManager;

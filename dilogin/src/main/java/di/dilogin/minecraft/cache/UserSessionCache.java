@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Optional;
 
 import di.dilogin.BukkitApplication;
-import di.dilogin.entity.UserSession;
+import di.dilogin.model.UserSession;
 import di.dilogin.repository.DIUserRepository;
 
 /**

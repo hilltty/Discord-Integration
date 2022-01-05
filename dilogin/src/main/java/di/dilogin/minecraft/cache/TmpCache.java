@@ -10,7 +10,7 @@ package di.dilogin.minecraft.cache;
 import java.util.HashMap;
 import java.util.Optional;
 
-import di.dilogin.entity.TmpMessage;
+import di.dilogin.model.TmpMessage;
 
 /**
  * Contains users who are in the process of registering / logging in

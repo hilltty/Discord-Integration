@@ -5,7 +5,7 @@
  * This project is under license https://github.com/Alhxe/Discord-Integration/blob/main/LICENSE
  */
 
-package di.dilogin.entity;
+package di.dilogin.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

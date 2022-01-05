@@ -15,7 +15,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import di.dilogin.controller.DILoginController;
 import di.dilogin.entity.DIUserEntity;
-import di.dilogin.entity.TmpMessage;
+import di.dilogin.model.TmpMessage;
 import di.dilogin.minecraft.cache.TmpCache;
 import di.dilogin.minecraft.cache.UserBlockedCache;
 import di.dilogin.minecraft.cache.UserSessionCache;

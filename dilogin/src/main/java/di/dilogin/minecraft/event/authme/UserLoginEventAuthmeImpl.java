@@ -14,9 +14,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import di.dilogin.controller.LangManager;
-import di.dilogin.entity.CodeGenerator;
+import di.dilogin.model.CodeGenerator;
 import di.dilogin.entity.DIUserEntity;
-import di.dilogin.entity.TmpMessage;
+import di.dilogin.model.TmpMessage;
 import di.dilogin.minecraft.cache.TmpCache;
 import di.dilogin.minecraft.event.UserLoginEvent;
 import di.dilogin.minecraft.event.custom.DILoginEvent;
