@@ -9,7 +9,7 @@ login_time_until_kick: 30
 #register_custom_characters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 #Only the custom added characters will appear in the +register command.
 
-#Database (sqlite or mysql)
+#Database (sqlite/h2 or mysql)
 database: 'sqlite'
 
 #Uncomment the following if you use MYSQL
