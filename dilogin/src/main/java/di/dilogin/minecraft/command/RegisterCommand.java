@@ -7,28 +7,25 @@
 
 package di.dilogin.minecraft.command;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-
+import di.dicore.DIApi;
+import di.dilogin.BukkitApplication;
+import di.dilogin.controller.DILoginController;
+import di.dilogin.controller.LangManager;
+import di.dilogin.minecraft.cache.TmpCache;
+import di.dilogin.model.TmpMessage;
+import di.dilogin.repository.DIUserRepository;
+import di.internal.utils.Utils;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import di.dicore.DIApi;
-import di.dilogin.BukkitApplication;
-import di.dilogin.controller.LangManager;
-import di.dilogin.model.TmpMessage;
-import di.dilogin.minecraft.cache.TmpCache;
-import di.dilogin.repository.DIUserRepository;
-import di.internal.utils.Utils;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.User;
+import java.time.Duration;
+import java.util.Optional;
 
 /**
  * Command to register as a user.
@@ -38,17 +35,22 @@ public class RegisterCommand implements CommandExecutor {
 	/**
 	 * DIUser repository.
 	 */
-	private static DIUserRepository diUserRepository = DIUserRepository.getInstance();
+	private static final DIUserRepository diUserRepository = DIUserRepository.getInstance();
 
 	/**
 	 * Main api.
 	 */
-	private final DIApi api = BukkitApplication.getDIApi();
+	private static final DIApi api = BukkitApplication.getDIApi();
 
 	/**
-	 * Reactions emoji.
+	 * Accept register emoji reaction.
 	 */
-	private final String emoji = api.getInternalController().getConfigManager().getString("discord_embed_emoji");
+	private static final String EMOJI = api.getInternalController().getConfigManager().getString("discord_embed_emoji");
+
+	/**
+	 * Reject register emoji reaction.
+	 */
+	private static final String EMOJI_REJECTED = api.getInternalController().getConfigManager().getString("discord_embed_emoji_rejected");
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -91,7 +93,7 @@ public class RegisterCommand implements CommandExecutor {
 
 			player.sendMessage(LangManager.getString(user, player, "register_submit"));
 
-			MessageEmbed messageEmbed = getEmbedMessage(player, user);
+			MessageEmbed messageEmbed = getEmbedRegisterMessage(player, user);
 
 			sendMessage(user, player, messageEmbed);
 
@@ -110,21 +112,21 @@ public class RegisterCommand implements CommandExecutor {
 		String code = TmpCache.getRegisterMessage(player.getName()).get().getCode();
 		user.openPrivateChannel().submit()
 				.thenAccept(channel -> channel.sendMessage(messageEmbed).submit().thenAccept(message -> {
-					message.addReaction(emoji).queue();
+					message.addReaction(EMOJI).and(message.addReaction(EMOJI_REJECTED)).queue();
 					TmpCache.addRegister(player.getName(), new TmpMessage(player, user, message, code));
 				}).whenComplete((message, error) -> {
 					if (error == null)
 						return;
 
-					TextChannel serverchannel = api.getCoreController().getDiscordApi()
+					TextChannel serverChannel = api.getCoreController().getDiscordApi()
 							.getTextChannelById(api.getInternalController().getConfigManager().getLong("channel"));
 
-					serverchannel.sendMessage(user.getAsMention()).delay(Duration.ofSeconds(10))
+					serverChannel.sendMessage(user.getAsMention()).delay(Duration.ofSeconds(10))
 							.flatMap(Message::delete).queue();
 
-					Message servermessage = serverchannel.sendMessage(messageEmbed).submit().join();
-					servermessage.addReaction(emoji).queue();
-					TmpCache.addRegister(player.getName(), new TmpMessage(player, user, servermessage, code));
+					Message serverMessage = serverChannel.sendMessage(messageEmbed).submit().join();
+					serverMessage.addReaction(EMOJI).queue();
+					TmpCache.addRegister(player.getName(), new TmpMessage(player, user, serverMessage, code));
 
 				}));
 	}
@@ -136,24 +138,10 @@ public class RegisterCommand implements CommandExecutor {
 	 * @param user   Discord user.
 	 * @return Embed message configured.
 	 */
-	private MessageEmbed getEmbedMessage(Player player, User user) {
-		EmbedBuilder embedBuilder = new EmbedBuilder().setTitle(LangManager.getString(player, "register_discord_title"))
+	private MessageEmbed getEmbedRegisterMessage(Player player, User user) {
+		return DILoginController.getEmbedBase().setTitle(LangManager.getString(player, "register_discord_title"))
 				.setDescription(LangManager.getString(user, player, "register_discord_desc")).setColor(
-						Utils.hex2Rgb(api.getInternalController().getConfigManager().getString("discord_embed_color")));
-
-		if (api.getInternalController().getConfigManager().getBoolean("discord_embed_server_image")) {
-			Optional<Guild> optGuild = Optional.ofNullable(api.getCoreController().getDiscordApi()
-					.getGuildById(api.getCoreController().getConfigManager().getLong("discord_server_id")));
-			if (optGuild.isPresent()) {
-				String url = optGuild.get().getIconUrl();
-				if (url != null)
-					embedBuilder.setThumbnail(url);
-			}
-		}
-
-		if (api.getInternalController().getConfigManager().getBoolean("discord_embed_timestamp"))
-			embedBuilder.setTimestamp(Instant.now());
-		return embedBuilder.build();
+						Utils.hex2Rgb(api.getInternalController().getConfigManager().getString("discord_embed_color"))).build();
 	}
 
 	/**
@@ -164,9 +152,9 @@ public class RegisterCommand implements CommandExecutor {
 		String respuesta = "";
 		for (int i = 0; i < string.length; i++) {
 			if (i != string.length - 1) {
-				respuesta = String.valueOf(respuesta) + string[i] + " ";
+				respuesta += string[i] + " ";
 			} else {
-				respuesta = String.valueOf(respuesta) + string[i];
+				respuesta += string[i];
 			}
 		}
 		return respuesta;
@@ -174,8 +162,8 @@ public class RegisterCommand implements CommandExecutor {
 
 	/**
 	 * Check if the user entered exists.
-	 * 
-	 * @param name Discord username with discriminator.
+	 *
+	 * @param id Discord user id.
 	 * @return True if user exists.
 	 */
 	private static boolean idIsValid(String id) {

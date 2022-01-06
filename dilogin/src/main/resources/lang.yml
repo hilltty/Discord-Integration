@@ -29,6 +29,7 @@ login_discord_success: "**%minecraft_username%** account login has been approved
 #GobalCommands
 no_player: "No user found whose nickname is %nick%"
 user_not_registered: "User %minecraft_username% is not registered."
+request_rejected: "Your request has been rejected."
 
 #ForceLogin
 forcelogin_user_connected: "User has already logged in."

@@ -7,27 +7,27 @@
 
 package di.dilogin.discord.event;
 
-import java.time.Duration;
-import java.util.Optional;
-
-import org.bukkit.entity.Player;
-
 import di.dicore.DIApi;
 import di.dilogin.BukkitApplication;
 import di.dilogin.controller.DILoginController;
 import di.dilogin.controller.LangManager;
-import di.dilogin.model.AuthmeHook;
-import di.dilogin.model.CodeGenerator;
 import di.dilogin.entity.DIUserEntity;
-import di.dilogin.model.TmpMessage;
 import di.dilogin.minecraft.cache.TmpCache;
 import di.dilogin.minecraft.util.Util;
+import di.dilogin.model.AuthmeHook;
+import di.dilogin.model.CodeGenerator;
+import di.dilogin.model.TmpMessage;
 import di.dilogin.repository.DIUserRepository;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.bukkit.entity.Player;
+
+import java.time.Duration;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Class for handling discord login or registration events.
@@ -37,12 +37,22 @@ public class UserReactionMessageEvent extends ListenerAdapter {
 	/**
 	 * DIUser repository.
 	 */
-	private static DIUserRepository diUserRepository = DIUserRepository.getInstance();
+	private static final DIUserRepository diUserRepository = DIUserRepository.getInstance();
 	
 	/**
 	 * DIApi api.
 	 */
-	private final DIApi api = BukkitApplication.getDIApi();
+	private static final DIApi api = BukkitApplication.getDIApi();
+
+	/**
+	 * Accept register emoji reaction.
+	 */
+	private static final String EMOJI = api.getInternalController().getConfigManager().getString("discord_embed_emoji");
+
+	/**
+	 * Reject register emoji reaction.
+	 */
+	private static final String EMOJI_REJECTED = api.getInternalController().getConfigManager().getString("discord_embed_emoji_rejected");
 
 	@Override
 	public void onMessageReactionAdd(MessageReactionAddEvent event) {
@@ -50,29 +60,61 @@ public class UserReactionMessageEvent extends ListenerAdapter {
 		if (event.getUser().isBot())
 			return;
 
-		Optional<TmpMessage> registerOpt = TmpCache.getRegisterMessage(event.getMessageIdLong());
-		if (registerOpt.isPresent()) {
-			registerUser(event, registerOpt.get());
-			return;
-		}
+		String reactionEmoji = event.getReactionEmote().getAsCodepoints();
 
-		Optional<TmpMessage> loginOpt = TmpCache.getLoginMessage(event.getMessageIdLong());
-		if (loginOpt.isPresent())
-			loginUser(event, loginOpt.get());
+		if (reactionEmoji.equalsIgnoreCase(EMOJI)) {
+
+			Optional<TmpMessage> registerOpt = TmpCache.getRegisterMessage(event.getMessageIdLong());
+			if (registerOpt.isPresent()) {
+				registerUser(event, registerOpt.get());
+				return;
+			}
+
+			Optional<TmpMessage> loginOpt = TmpCache.getLoginMessage(event.getMessageIdLong());
+			loginOpt.ifPresent(tmpMessage -> loginUser(event, tmpMessage));
+
+		} else if (reactionEmoji.equalsIgnoreCase(EMOJI_REJECTED)){
+
+			Optional<TmpMessage> tmpMessageOptional = TmpCache.getRegisterMessage(event.getMessageIdLong());
+			tmpMessageOptional = !tmpMessageOptional.isPresent() ? TmpCache.getLoginMessage(event.getMessageIdLong()) : tmpMessageOptional;
+
+			System.out.println("OPTIONAL IS PRESENT: "+tmpMessageOptional.isPresent());
+			if(!tmpMessageOptional.isPresent())
+				return;
+
+			rejectRequest(event,tmpMessageOptional.get());
+
+		}
+	}
+
+	/**
+	 *  In case of reject a request.
+	 * @param event     Reaction event.
+	 * @param tmpMessage Process message.
+	 */
+	private void rejectRequest(MessageReactionAddEvent event, TmpMessage tmpMessage){
+
+		Message message = tmpMessage.getMessage();
+		Player player = tmpMessage.getPlayer();
+		User user = tmpMessage.getUser();
+
+		// It is not necessary to delete the message, since when a user disconnects from the server
+		// with an active request, it is automatically deleted.
+		DILoginController.kickPlayer(player, LangManager.getString(user, player, "request_rejected"));
 	}
 
 	/**
 	 * In case of being present in a registration process, this is carried out.
 	 * 
 	 * @param event     Reaction event.
-	 * @param tmpMssage Process message.
+	 * @param tmpMessage Process message.
 	 */
 	private void registerUser(MessageReactionAddEvent event, TmpMessage tmpMessage) {
 		Message message = tmpMessage.getMessage();
 		Player player = tmpMessage.getPlayer();
 		User user = tmpMessage.getUser();
 
-		if (!event.getUser().equals(user))
+		if (!Objects.equals(event.getUser(), user))
 			return;
 
 		if (event.getMessageIdLong() != message.getIdLong())
@@ -102,14 +144,14 @@ public class UserReactionMessageEvent extends ListenerAdapter {
 	 * In case of being present in a login process, this is carried out.
 	 * 
 	 * @param event     Reaction event.
-	 * @param tmpMssage Process message.
+	 * @param tmpMessage Process message.
 	 */
 	private void loginUser(MessageReactionAddEvent event, TmpMessage tmpMessage) {
 		Message message = tmpMessage.getMessage();
 		Player player = tmpMessage.getPlayer();
 		User user = tmpMessage.getUser();
 
-		if (!event.getUser().equals(user))
+		if (!Objects.equals(event.getUser(), user))
 			return;
 
 		if (event.getMessageIdLong() != message.getIdLong())

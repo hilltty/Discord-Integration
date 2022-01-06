@@ -35,6 +35,7 @@ discord_embed_timestamp: true
 #This is the emoji codepoint. You can find it on some page like https://emojipedia.org/
 #Find the emoji you want and scroll down until you find the "Codepoint" section.
 discord_embed_emoji: 'U+2B50'
+discord_embed_emoji_rejected: 'U+274C'
 
 #Sessions
 sessions: true
